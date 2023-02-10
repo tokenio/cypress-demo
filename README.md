@@ -10,4 +10,5 @@ This project is part of POC project to choose the testing tool among cypress and
 1. Run `npm install` </br>
 2. Run `npm run test`  </br>
 3. Select `E2E Testing`
-3. Choose the browser and click on `Start E2E Testing`
+4. Choose the browser and click on `Start E2E Testing`
+5. Choose the feature file you want to run
