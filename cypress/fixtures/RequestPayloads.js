@@ -1,10 +1,10 @@
 // let C_REFID = ''
 // let REDIRECT_URL = ''
 
-const createPaymentPayload = (C_REFID, REDIRECT_URL) => {
+const createPaymentPayload = (BANK_ID, C_REFID, REDIRECT_URL) => {
     return {
     initiation: {
-        bankId: "mock-redirect",
+        bankId: BANK_ID,
         refId: `${C_REFID}`,
         remittanceInformationPrimary: `RemittancePrimary${C_REFID}`,
         remittanceInformationSecondary: `RemittanceSecondary${C_REFID}`,

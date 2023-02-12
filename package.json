@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/cypress open"
+    "open": "./node_modules/.bin/cypress open --e2e",
+    "test": "./node_modules/.bin/cypress run --e2e",
+    "token-callback": "./node_modules/.bin/cypress run --spec \"cypress/e2e/**/*.feature:@token-callback\""
   },
   "repository": {
     "type": "git",
