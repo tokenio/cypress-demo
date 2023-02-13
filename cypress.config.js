@@ -9,6 +9,13 @@ module.exports = defineConfig({
     chromeWebSecurity: false,
     supportFile: false,
     specPattern: "cypress/e2e/features/*.feature",
+    reporter: 'mochawesome',
+    reporterOptions: {
+      reportDir: 'cypress/results',
+      overwrite: false,
+      html: true,
+      json: true,
+    },
     async setupNodeEvents(on, config) {
 
       const bundler = createBundler({
