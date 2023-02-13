@@ -25,10 +25,10 @@ Feature: Create Payment Request
         And User wait for "3" seconds
 
         # repeating visting redirect url since its not opening the bank homepage after one redirect
-        When User visits the redirect url
-        And User wait for "3" seconds
-        And User logs in via home page for bank with "ngp-cbi-07601-annex" bank id
-        And User wait for "3" seconds
+        # When User visits the redirect url
+        # And User wait for "3" seconds
+        # And User logs in via home page for bank with "ngp-cbi-07601-annex" bank id
+        # And User wait for "3" seconds
 
         And User accepts the concent on the page
         And User wait for "3" seconds
