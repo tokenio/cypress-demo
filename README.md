@@ -18,3 +18,8 @@ This project is part of POC project to choose the testing tool among cypress and
 1. Run `npm install` </br>
 2. Run `npm run test`  </br> (tests will run in terminal)
 3. Open `cypress/results/mochawesome.html` in the browser to see test report. 
+
+**How to Run with Test with specific tag**
+1. Run `npm install` </br>
+2. Run `npm run token-callback`  </br> (tests will run in terminal)
+3. Open `cypress/results/mochawesome.html` in the browser to see test report. 
