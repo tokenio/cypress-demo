@@ -1,5 +1,5 @@
 # cypress-demo
-This project is part of POC project to choose the testing tool among cypress and playwright. 
+This project is part of POC project to demonstrate cypress testing tool for V2 payments api testing
 
 **Prerequisite**
 

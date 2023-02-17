@@ -1,4 +1,4 @@
-Feature: Create Payment Request
+Feature: Payments V2
     
     @token-callback @two-step
     Scenario: Verify that token callback request is sent successfully for mock-redirect
