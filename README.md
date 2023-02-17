@@ -11,7 +11,7 @@ This project is part of POC project to demonstrate cypress testing tool for V2 p
 2. Run `npm run open`  </br>
 3. Select `E2E Testing`
 4. Choose the browser and click on `Start E2E Testing`
-5. Click on the feature file you want to run
+5. Click on the `payments.feature` spec to run
 
 
 **How to Run with Test Reports**
