@@ -1,28 +1,33 @@
 
 const { DEV } = require('../../support/config/dev_config')
-const { mockRedirectPayload, bancoPostaPayload, authCallbackPayload } = require('../../fixtures/RequestPayloads')
+const { payloadValue, authCallbackPayload } = require('../../fixtures/RequestPayloads')
 const { Given, When, Then } = require("@badeball/cypress-cucumber-preprocessor")
 require('../../support/commands')
 
 const REDIRECT_URL = DEV.TOKEN_CALLBACK.REDIRECT_URL
+let C_REFID = ""
 
 describe('Token Callback Two Step flow', () => {
 
-  Given('User Sends createPaymentRequest to {string} bank id', (BANK_ID) => {
-    const C_REFID = Cypress._.random(0, 1e6)
-    let createPaymentPayload = {}
-
-    if(BANK_ID == 'mock-redirect') {
-        createPaymentPayload = mockRedirectPayload(BANK_ID, C_REFID, REDIRECT_URL)
-    } else if(BANK_ID == 'ngp-cbi-07601-annex') {
-        createPaymentPayload = bancoPostaPayload(BANK_ID, C_REFID, REDIRECT_URL)
-    }
-
-    cy.sendApiRequest('POST', 'v2/payments', { 'Content-Type': 'application/json' }, 
-    createPaymentPayload)
+  Given('User Sends createPaymentRequest to {string} bank id with {string} {string} {string} {string} {string} details', 
+  (BANK_ID, LOCAL_INSTRUMENT, sortCode, accountNumber, creditorIban, debtorIban) => {
+    C_REFID = Cypress._.random(0, 1e6)
+    cy.wrap(BANK_ID).as('bankId')
+    let payload = payloadValue(BANK_ID, C_REFID, REDIRECT_URL, LOCAL_INSTRUMENT, 
+      sortCode, accountNumber, creditorIban, debtorIban)
+    cy.log('payload: ====' + JSON.stringify(payload))
+    cy.sendApiRequest('POST', 'v2/payments', 
+    payload)
       .its('status')
       .should('equal', 200)
-      
+  })
+
+  When('User Sends OnBankAuthCallback request', () => {
+    let payload = authCallbackPayload(C_REFID)
+    cy.sendApiRequest('POST', 'callback/initiation', 
+    payload)
+      .its('status')
+      .should('equal', 200)
   })
 
   Then('Payment status should be {string}', (status) => {
@@ -33,12 +38,29 @@ describe('Token Callback Two Step flow', () => {
     })
   })
 
-  When('User visits the redirect url', () => {
+  When('User visits the redirect url and perform necessary action', () => {
     cy.get('@response').then((response) => {
     
       const redirectUrl = response.body.payment.authentication.redirectUrl;
       cy.log('redirect url is: ----------> ' + redirectUrl)
       cy.visit(redirectUrl , { failOnStatusCode: false })
+
+      cy.get('@bankId').then((bankId) => {
+        if(bankId == 'ob-lloyds') {
+          cy.loginWithCredentials('input[placeholder="User Name"]',
+          'input[placeholder="Password"]', 'button[type="submit"]',
+          'llr001', 'Password123')
+          cy.consentPage("label[for='mat-radio-2-input'] div[class='mat-radio-inner-circle']", "button[type='submit'] span[class='mat-button-wrapper']")
+          cy.get("button[id='confirm-dialog-submit'] span[class='mat-button-wrapper']").click()
+          cy.wait(2000)
+        } else if (bankId == 'mbank') {
+          cy.authorizePage('#authorize-button')
+          cy.wait(1000)
+        }else if (bankId == 'mock-redirect') {
+            // do nothing
+        }
+      })
+      
       cy.wrap(redirectUrl).as('redirectUrl')
     })
   })
@@ -47,7 +69,7 @@ describe('Token Callback Two Step flow', () => {
     cy.wait(waitTime * 1000)
   })
 
-  Then('Final url should be {string}', (final_Url) => {
+  Then('Final url should contain {string} and payment id', (status) => {
 
     // save the final url
     cy.location().then((location) => {
@@ -56,12 +78,25 @@ describe('Token Callback Two Step flow', () => {
 
     cy.get('@finalUrl').then((finalUrl) => {
       cy.log('final usr is:-----' + finalUrl)
-      cy.log('final usr is:-----' + final_Url)
 
-      const escapedSearchTerm = final_Url.replace(/[.*+?^${}()|[\]\\]/g, '$&');
-      const searchRegex = new RegExp(escapedSearchTerm);
+      cy.get('@paymentId').then((paymentId) => {
+        expect(finalUrl).to.contain(paymentId);
+      })
+      expect(finalUrl).to.contain(status);
+    });
+  })
 
-      expect(finalUrl).to.match(searchRegex);
+  Then('Final url should contain {string} and ref id', (status) => {
+
+    // save the final url
+    cy.location().then((location) => {
+      cy.wrap(location.href).as('finalUrl');
+    });
+
+    cy.get('@finalUrl').then((finalUrl) => {
+      cy.log('final usr is:-----' + finalUrl)
+      expect(finalUrl).to.contain(C_REFID);
+      expect(finalUrl).to.contain(status);
     });
   })
 
@@ -103,13 +138,12 @@ describe('Token Callback Two Step flow', () => {
       cy.get('#_prosegui').click();
   })
 
-  When('Token redeems the payment and gets {string} status', (status) => {
-    cy.get('@response').its('body').should('have.property', 'payment')
+  When('User Sends RedeemPayment request and gets {string} status', (status) => {
     cy.get('@response')
     .then((response) => {
       const paymentId = response.body.payment.id;
       
-      cy.sendApiRequest('POST', `v2/payments/${paymentId}/redeem`, { 'Content-Type': 'application/json' })
+      cy.sendApiRequest('POST', `v2/payments/${paymentId}/redeem`)
         .its('status')
         .should('equal', 200)
 
@@ -127,7 +161,7 @@ describe('Token Callback Two Step flow', () => {
     .then((response) => {
       const paymentId = response.body.payment.id;
       
-      cy.sendApiRequest('GET', `v2/payments/${paymentId}`, { 'Content-Type': 'application/json' })
+      cy.sendApiRequest('GET', `v2/payments/${paymentId}`)
         .its('status')
         .should('equal', 200)
 

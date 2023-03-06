@@ -18,6 +18,8 @@ module.exports = defineConfig({
       html: true,
       json: true,
     },
+    video: false,
+    screenshots: false,
     retries: {
       // Configure retry attempts for `cypress run`
       // Default is 0

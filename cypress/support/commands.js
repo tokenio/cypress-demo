@@ -28,17 +28,30 @@ const { DEV } = require('../support/config/dev_config')
 const API_URL = DEV.API_BASE_URL
 const API_KEY = DEV.TOKEN_CALLBACK.API_KEY
 
-Cypress.Commands.add('sendApiRequest', (method, endpoint, headers = {}, data = {}) => {
-    cy.request({
-      method: method,
-      url: `${API_URL}/${endpoint}`,
+Cypress.Commands.add('sendApiRequest', (method, endpoint, requestBody = {}, headers = {}) => {
+  const requestUrl = `${API_URL}/${endpoint}`
+  const options = {
+    method: method,
+      url: requestUrl,
       headers: {
         ...headers,
+        'Content-Type': 'application/json',
         Authorization: `Basic ${API_KEY}`,
       },
-      body: data,
-      withCredentials: true,
-    }).as('response')
+      body: requestBody,
+      withCredentials: true
+  };
+
+  cy.request(options).then((response) => {
+    const curlRequest = `curl -X ${method} -H '${JSON.stringify(headers)}' -d '${JSON.stringify(requestBody)}' ${requestUrl}`;
+
+    cy.log(curlRequest);
+    cy.log('curl request is: ==' + response.request)
+    cy.wrap(response.body.payment.id).as('paymentId')
+    cy.wrap(response).as('response')
+    
+  })
+
   })
   
   // intercept api request and print as curl request
@@ -59,6 +72,25 @@ Cypress.Commands.add('sendApiRequest', (method, endpoint, headers = {}, data = {
     }
     ).as('apiInterception');
   })
+
+  Cypress.Commands.add('loginWithCredentials', (usernameLocator, passwordLocator, submitLocator, username, password) => {
+    cy.get(usernameLocator).type(username);
+    cy.get(passwordLocator).type(password);
+    cy.get(submitLocator).click();
+  });
+
+  // in case of selecting a radio button and submit button
+  Cypress.Commands.add('consentPage', (selectAccountLocator, submitLocator) => {
+    cy.get(selectAccountLocator).click();
+    cy.wait(1000);
+    cy.get(submitLocator).scrollIntoView();
+    cy.get(submitLocator).click();
+  });
+
+  // in case of selecting a radio button and submit button
+  Cypress.Commands.add('authorizePage', (authorizeButtonLocator) => {
+    cy.get(authorizeButtonLocator).click();
+  });
   
   Cypress.Commands.add("getStringBetween", (text, start, end) => {
     const startIndex = text.indexOf(start) + start.length;
