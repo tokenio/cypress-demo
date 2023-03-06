@@ -3,6 +3,7 @@ Feature: Payments V2
     @token-callback @two-step
     Scenario: Verify that token callback request is sent successfully for "<bank-id>"
 
+        Given Environment type is "token-callback"
         Given User Sends createPaymentRequest to "<bank-id>" bank id with "<localInstrument>" "<sortCode>" "<account>" "<creditorIban>" "<debtorIban>" details
         Then Payment status should be "INITIATION_PENDING_REDIRECT_AUTH"
         When User visits the redirect url and perform necessary action
@@ -24,6 +25,7 @@ Feature: Payments V2
     @tpp-callback @two-step
     Scenario: Verify that tpp callback request is sent successfully for "<bank-id>"
 
+        Given Environment type is "tpp-callback"
         Given User Sends createPaymentRequest to "<bank-id>" bank id with "<localInstrument>" "<sortCode>" "<account>" "<creditorIban>" "<debtorIban>" details
         Then Payment status should be "INITIATION_PENDING_REDIRECT_AUTH"
         When User visits the redirect url and perform necessary action

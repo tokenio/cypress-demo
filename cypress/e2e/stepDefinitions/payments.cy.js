@@ -1,13 +1,18 @@
 
-const { DEV } = require('../../support/config/dev_config')
+const { DEV, getEnv } = require('../../support/config/dev_config')
 const { payloadValue, authCallbackPayload } = require('../../fixtures/RequestPayloads')
 const { Given, When, Then } = require("@badeball/cypress-cucumber-preprocessor")
 require('../../support/commands')
 
 const REDIRECT_URL = DEV.TOKEN_CALLBACK.REDIRECT_URL
 let C_REFID = ""
+let ENV = {}
 
 describe('Token Callback Two Step flow', () => {
+
+  Given('Environment type is {string}', (environment) => {
+    ENV = getEnv(environment)
+  })
 
   Given('User Sends createPaymentRequest to {string} bank id with {string} {string} {string} {string} {string} details', 
   (BANK_ID, LOCAL_INSTRUMENT, sortCode, accountNumber, creditorIban, debtorIban) => {
@@ -16,7 +21,8 @@ describe('Token Callback Two Step flow', () => {
     let payload = payloadValue(BANK_ID, C_REFID, REDIRECT_URL, LOCAL_INSTRUMENT, 
       sortCode, accountNumber, creditorIban, debtorIban)
     cy.log('payload: ====' + JSON.stringify(payload))
-    cy.sendApiRequest('POST', 'v2/payments', 
+    
+    cy.sendApiRequest(ENV.API_KEY, 'POST', 'v2/payments', 
     payload)
       .its('status')
       .should('equal', 200)
@@ -24,7 +30,7 @@ describe('Token Callback Two Step flow', () => {
 
   When('User Sends OnBankAuthCallback request', () => {
     let payload = authCallbackPayload(C_REFID)
-    cy.sendApiRequest('POST', 'callback/initiation', 
+    cy.sendApiRequest(ENV.API_KEY, 'POST', 'callback/initiation', 
     payload)
       .its('status')
       .should('equal', 200)
@@ -42,7 +48,8 @@ describe('Token Callback Two Step flow', () => {
     cy.get('@response').then((response) => {
     
       const redirectUrl = response.body.payment.authentication.redirectUrl;
-      cy.log('redirect url is: ----------> ' + redirectUrl)
+      expect(redirectUrl).not.to.be.undefined
+      // cy.log('redirect url is: ----------> ' + redirectUrl)
       cy.visit(redirectUrl , { failOnStatusCode: false })
 
       cy.get('@bankId').then((bankId) => {
@@ -143,7 +150,7 @@ describe('Token Callback Two Step flow', () => {
     .then((response) => {
       const paymentId = response.body.payment.id;
       
-      cy.sendApiRequest('POST', `v2/payments/${paymentId}/redeem`)
+      cy.sendApiRequest(ENV.API_KEY,'POST', `v2/payments/${paymentId}/redeem`)
         .its('status')
         .should('equal', 200)
 
@@ -161,7 +168,7 @@ describe('Token Callback Two Step flow', () => {
     .then((response) => {
       const paymentId = response.body.payment.id;
       
-      cy.sendApiRequest('GET', `v2/payments/${paymentId}`)
+      cy.sendApiRequest(ENV.API_KEY, 'GET', `v2/payments/${paymentId}`)
         .its('status')
         .should('equal', 200)
 

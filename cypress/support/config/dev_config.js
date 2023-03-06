@@ -20,5 +20,12 @@ const DEV = {
       REDIRECT_URL: "https://dlng.io/test/"
     }
   }
+
+  const getEnv = (callbackType) => {
+      return env = callbackType == 'token-callback' ? DEV.TOKEN_CALLBACK :
+                   callbackType == 'tpp-callback' ? DEV.TPP_CALLBACK :
+                   callbackType == 'token-callback-autoredeem' ? DEV.TOKEN_CALLBACK_AUTOREDEEM :
+                   DEV.TOKEN_CALLBACK
+  }
   
-  module.exports = { DEV } 
+  module.exports = { getEnv, DEV } 

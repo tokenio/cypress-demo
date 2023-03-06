@@ -26,9 +26,8 @@
 
 const { DEV } = require('../support/config/dev_config')
 const API_URL = DEV.API_BASE_URL
-const API_KEY = DEV.TOKEN_CALLBACK.API_KEY
 
-Cypress.Commands.add('sendApiRequest', (method, endpoint, requestBody = {}, headers = {}) => {
+Cypress.Commands.add('sendApiRequest', (apikey, method, endpoint, requestBody = {}, headers = {}) => {
   const requestUrl = `${API_URL}/${endpoint}`
   const options = {
     method: method,
@@ -36,7 +35,7 @@ Cypress.Commands.add('sendApiRequest', (method, endpoint, requestBody = {}, head
       headers: {
         ...headers,
         'Content-Type': 'application/json',
-        Authorization: `Basic ${API_KEY}`,
+        Authorization: `Basic ${apikey}`,
       },
       body: requestBody,
       withCredentials: true
